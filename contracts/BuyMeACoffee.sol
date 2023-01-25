@@ -2,7 +2,8 @@
 pragma solidity ^0.8.17;
 
 // Uncomment this line to use console.log
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
+
 
 contract BuyMeACoffee {
     //  Event to emit when a Memo is created
@@ -30,11 +31,13 @@ contract BuyMeACoffee {
     // Address of contract deployer.
 
     address payable owner;
+    address payable withdrawalAddress;
 
     // Deploy logic.
 
     constructor() {
-        owner = payable(msg.sender);  
+        owner = payable(msg.sender);
+        withdrawalAddress = payable(msg.sender);
     }
 
     /**
@@ -66,11 +69,22 @@ contract BuyMeACoffee {
     }
 
     /**
+     * @dev update the withdraw address
+     */
+
+    function updateWithdrawalAddress(address payable newAddress) public {
+        require(msg.sender == owner, "Only the owner can update the withdrawal address.");
+        withdrawalAddress = newAddress;
+    }
+
+    /**
      * @dev send the entire balance stored in this contract to the owner
      */
 
     function withdrawTips() public {
-        require(owner.send(address(this).balance));
+        require(msg.sender == owner, "Only the owner can withdraw funds.");
+        require(withdrawalAddress != address(0), "Withdraw address is not set.");
+        withdrawalAddress.transfer(address(this).balance);
     }
 
     /**
